@@ -1,17 +1,24 @@
 const asyncHandler = require('express-async-handler');
 
+const Post = require('../models/postModel');
+const User = require('../models/userModel');
+
 // @Desc Get All Posts
 // @Route GET /api/posts
 // @Access Public
 const getPosts = asyncHandler(async (req, res) => {
-	res.status(200).json({ message: 'Get Posts' });
+	const posts = await Post.find();
+
+	res.status(200).json(posts);
 });
 
 // @Desc Get Users Posts
-// @Route GET /api/posts/:UserId
+// @Route GET /api/posts/
 // @Access Private
 const getUserPosts = asyncHandler(async (req, res) => {
-	res.status(200).json({ message: 'Get Users Posts' });
+	const posts = await Post.find({ user: req.user.id });
+
+	res.status(200).json(posts);
 });
 
 // @Desc Create Post
@@ -23,21 +30,60 @@ const createPost = asyncHandler(async (req, res) => {
 		throw new Error('Please add a text field!');
 	}
 
-	res.status(200).json({ message: 'Create Post' });
+	const post = await Post.create({
+		text: req.body.text,
+		user: req.user.id,
+	});
+
+	res.status(200).json(post);
 });
 
 // @Desc Update Post
 // @Route PUT /api/posts/:id
 // @Access Private
 const updatePost = asyncHandler(async (req, res) => {
-	res.status(200).json({ message: `Update Post ${req.params.id}` });
+	const post = await Post.findById(req.params.id);
+
+	if (!post) {
+		res.status(400);
+		throw new Error('Post not found');
+	}
+
+	const user = await User.findById(req.user.id);
+
+	// Check for user
+	if (!user) {
+		res.status(401);
+		throw new Error('User not found');
+	}
+
+	// Make sure the logged in user matches the post user
+	if (post.user.toString() !== user.id) {
+		res.status(401);
+		throw new Error('Unauthorized');
+	}
+
+	const updatedPost = await Post.findByIdAndUpdate(req.params.id, req.body, {
+		new: true,
+	});
+
+	res.status(200).json({ updatedPost });
 });
 
 // @Desc Delete Post
 // @Route DELETE /api/posts/:id
 // @Access Private
 const deletePost = asyncHandler(async (req, res) => {
-	res.status(200).json({ message: `Delete Post ${req.params.id}` });
+	const post = await Post.findById(req.params.id);
+
+	if (!post) {
+		res.status(400);
+		throw new Error('Post not found');
+	}
+
+	const deletedPost = await Post.findByIdAndDelete(req.params.id);
+
+	res.status(200).json(deletedPost._id);
 });
 
 module.exports = {

@@ -46,7 +46,6 @@ const createContact = asyncHandler(async (req, res) => {
 // @Access Private
 const updateContact = asyncHandler(async (req, res) => {
 	const contact = await Contact.findById(req.params.id);
-
 	if (!contact) {
 		res.status(400);
 		throw new Error('Contact not found');

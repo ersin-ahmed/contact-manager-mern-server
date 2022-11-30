@@ -17,7 +17,8 @@ app.use(errorHandler);
 app.use(cors({ origin: true, credentials: true }));
 
 // Routes
-app.use('/api/posts', require('./routes/postRoutes'));
+// app.use('/api/posts', require('./routes/postRoutes'));
+app.use('/api/contacts', require('./routes/contactRoutes'));
 app.use('/api/users', require('./routes/userRouters'));
 
 app.listen(port, () => console.log(`Listening on port ${port}`));

@@ -49,16 +49,14 @@ const updatePost = asyncHandler(async (req, res) => {
 		throw new Error('Post not found');
 	}
 
-	const user = await User.findById(req.user.id);
-
 	// Check for user
-	if (!user) {
+	if (!req.user) {
 		res.status(401);
 		throw new Error('User not found');
 	}
 
 	// Make sure the logged in user matches the post user
-	if (post.user.toString() !== user.id) {
+	if (post.user.toString() !== req.user.id) {
 		res.status(401);
 		throw new Error('Unauthorized');
 	}
@@ -79,6 +77,16 @@ const deletePost = asyncHandler(async (req, res) => {
 	if (!post) {
 		res.status(400);
 		throw new Error('Post not found');
+	}
+
+	if (!req.user) {
+		res.status(401);
+		throw new Error('Unauthorized');
+	}
+
+	if (post.user.toString() !== req.user.id) {
+		res.status(401);
+		throw new Error('Unauthorized');
 	}
 
 	const deletedPost = await Post.findByIdAndDelete(req.params.id);
